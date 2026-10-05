@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-skill-conformance/schemas/evidence.schema.json",
+  "title": "Evidence",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "source": {
+      "type": "string",
+      "enum": ["declaration", "static", "runtime", "policy"]
+    },
+    "skill_id": { "type": "string", "minLength": 1 },
+    "data": { "type": "object" }
+  },
+  "required": ["schema_version", "source", "skill_id"],
+  "additionalProperties": false
+}
