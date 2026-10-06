@@ -14,6 +14,12 @@ policy-setting operation.
 
 from __future__ import annotations
 
+from agentic_conformance.core.conformance.policy import (
+    PolicyRule,
+    denied_capabilities,
+    evaluate_policy,
+    flagged_capabilities,
+)
 from agentic_conformance.core.conformance.rules import (
     policy_violating_capabilities,
     undeclared_capabilities,
@@ -40,6 +46,7 @@ class ConformanceEngine(ConformanceAPI):
         self._skills: dict[str, Skill] = {}
         self._events: dict[str, list[SecurityEvent]] = {}
         self._policies: dict[str, frozenset[str]] = {}
+        self._policy_rules: dict[str, tuple[PolicyRule, ...]] = {}
 
     def register_skill(self, skill_profile: Skill) -> None:
         self._skills[skill_profile.skill_id] = skill_profile
@@ -52,6 +59,14 @@ class ConformanceEngine(ConformanceAPI):
     def set_policy(self, skill_id: str, permitted_capabilities: frozenset[str]) -> None:
         """Register the permitted-capability policy (P) for a skill."""
         self._policies[skill_id] = frozenset(permitted_capabilities)
+
+    def set_policy_rules(self, skill_id: str, rules: tuple[PolicyRule, ...]) -> None:
+        """Register the ALLOW/FLAG/DENY-effect policy rules (second milestone,
+        Phase 6) for a skill. Additive to `set_policy`: a skill using this
+        method is evaluated via `evaluate_policy` instead of the legacy
+        flat permitted-set check; a skill that never calls this keeps the
+        original `set_policy` behavior completely unchanged."""
+        self._policy_rules[skill_id] = tuple(rules)
 
     def evaluate(self, skill_id: str) -> Decision:
         skill = self._skills.get(skill_id)
@@ -90,12 +105,28 @@ class ConformanceEngine(ConformanceAPI):
                 reason_code=ReasonCode.UNDECLARED_CAPABILITY,
             )
 
-        policy = self._policies.get(skill_id)
-        if policy is not None and policy_violating_capabilities(policy, observed):
-            return Decision(
-                skill_id=skill_id,
-                value=DecisionValue.DENY,
-                reason_code=ReasonCode.POLICY_VIOLATION,
-            )
+        policy_rules = self._policy_rules.get(skill_id)
+        if policy_rules is not None:
+            effects = evaluate_policy(policy_rules, observed)
+            if denied_capabilities(effects):
+                return Decision(
+                    skill_id=skill_id,
+                    value=DecisionValue.DENY,
+                    reason_code=ReasonCode.POLICY_VIOLATION,
+                )
+            if flagged_capabilities(effects):
+                return Decision(
+                    skill_id=skill_id,
+                    value=DecisionValue.FLAG,
+                    reason_code=ReasonCode.POLICY_VIOLATION,
+                )
+        else:
+            policy = self._policies.get(skill_id)
+            if policy is not None and policy_violating_capabilities(policy, observed):
+                return Decision(
+                    skill_id=skill_id,
+                    value=DecisionValue.DENY,
+                    reason_code=ReasonCode.POLICY_VIOLATION,
+                )
 
         return Decision(skill_id=skill_id, value=DecisionValue.ALLOW)
