@@ -11,6 +11,9 @@ license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [{ name = "Khadija Shahzad" }]
 
+[project.scripts]
+skillshield = "skillshield.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
@@ -18,7 +21,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agentic_conformance"]
+packages = ["src/agentic_conformance", "src/skillshield"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -26,3 +29,4 @@ testpaths = ["tests"]
 [tool.ruff]
 src = ["src"]
 line-length = 100
+extend-exclude = ["_archive"]

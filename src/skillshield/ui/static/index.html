@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkillShield</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <header>
+    <h1>SkillShield</h1>
+    <p class="tagline">Assess an Agentic Skill Before You Trust It</p>
+  </header>
+
+  <main>
+    <section id="upload-panel" class="panel">
+      <form id="assess-form">
+        <div class="upload-row">
+          <label for="zip-input">Upload a skill ZIP</label>
+          <input type="file" id="zip-input" name="skill_zip" accept=".zip" />
+        </div>
+
+        <p class="or-divider">or</p>
+
+        <div class="upload-row">
+          <label for="dir-input">Select a local skill folder</label>
+          <input
+            type="file"
+            id="dir-input"
+            name="skill_files"
+            webkitdirectory
+            directory
+            multiple
+          />
+        </div>
+
+        <p id="selection-summary" class="selection-summary">No skill selected yet.</p>
+
+        <button type="submit" id="assess-button" disabled>Assess</button>
+      </form>
+    </section>
+
+    <section id="progress-panel" class="panel" hidden>
+      <p id="progress-message">Preparing skill...</p>
+    </section>
+
+    <section id="error-panel" class="panel panel--error" hidden>
+      <h2>Could Not Be Assessed</h2>
+      <p id="error-message"></p>
+      <button type="button" id="error-reset-button">Try Again</button>
+    </section>
+
+    <section id="result-panel" class="panel" hidden>
+      <div id="recommendation-banner" class="recommendation"></div>
+
+      <h2>Capability Summary (D / S / R / P)</h2>
+      <table id="capability-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Count</th>
+            <th>Capabilities</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>Findings</h2>
+      <div id="findings-list"></div>
+
+      <h2>Limitations</h2>
+      <ul id="limitations-list"></ul>
+
+      <p class="meta" id="result-meta"></p>
+
+      <button type="button" id="reset-button">Assess Another Skill</button>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
